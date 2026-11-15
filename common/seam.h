@@ -50,4 +50,5 @@ seam_t find_seam_greedy_all_starts(const cv::Mat& energy, float& total_cost);
 seam_t find_seam_dp(const cv::Mat& energy, float& total_cost);
 
 // seam_graphcut.cpp
-seam_t find_seam_graphcut(const cv::Mat& energy, float& total_cost);
+seam_t find_seam_graphcut(const cv::Mat& energy, float& total_cost);     // Dinic
+seam_t find_seam_graphcut_ek(const cv::Mat& energy, float& total_cost);  // Edmonds-Karp

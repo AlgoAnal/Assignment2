@@ -1,70 +1,47 @@
-#include <string>
-#include <iostream>
-#include <iomanip>
-#include <cmath>
-#include <vector>
+// Small stand-alone test for MinCutMaxFlow (not part of seam_carving).
+// Runs Edmonds-Karp and Dinic on the same toy graph; both must agree, and the
+// min cut must equal the max flow.
+
 #include "MinCutMaxFlow.h"
-#include <utility>
-#include <queue>
-#include <algorithm>
-#include <limits>
 
-//this will represent the Adjacency Matrix in 4x4 
-std::vector<std::vector<int>> adjacencyMatrix(4, std::vector<int>(4,0));
-std::vector<std::vector<int>> residualGraph(4, std::vector<int>(4,0));
+#include <iostream>
+#include <vector>
 
+using namespace mincut;
 
-int main(){
+namespace {
 
-    adjacencyMatrix[0][1] = 10;
-    adjacencyMatrix[0][2] = 5;
-    adjacencyMatrix[1][3] = 4;
-    adjacencyMatrix[2][3] = 8;
-       
-    residualGraph = adjacencyMatrix;
+void run(const char* label, double (*maxFlowFn)(ResidualGraph&, int, int),
+         ResidualGraph graph, int src, int sink) {  // graph copied on purpose
+  const double maxFlow = maxFlowFn(graph, src, sink);
 
-    int src = 0;
-    int sink = 3;
-    std::vector<int> parent(4, -1);
+  std::vector<bool> visited;
+  findReachable(graph, src, visited);
+  const double minCut = findMinCut(graph, visited);
 
-    printMatrix(residualGraph, "Residual Graph Before Update");
-
-    bool pathFound{};
-
-    int maxFlow = 0;
-
-
-    while (pathFound = bfs(residualGraph, src, sink, parent)) {
-
-    //from here i want to trace back to the source from the sink
-    int pathFlow = findPathFlow(residualGraph, parent, src, sink);
-
-    std::cout << "Path Flow: " << pathFlow << "\n";
-    
-    updateResidualGraph(residualGraph, parent, src, sink, pathFlow);
-
-    maxFlow += pathFlow;
-    
-    }
-
-
-    
-    printMatrix(residualGraph, "Residual Graph After Update");
-    std::cout << "Maximum Flow: " << maxFlow << '\n';
-
-
-    std::vector<bool> visited;
-
-    findReachable(residualGraph, src, visited);
-
-    int minCut = findMinCut(adjacencyMatrix, visited);
-
-    std::cout << "Maximum Flow: " << maxFlow << '\n';
-    std::cout << "Minimum Cut: " << minCut << '\n';
-
-
-
+  printGraph(graph, std::string(label) + ": flow / capacity");
+  std::cout << "Maximum Flow: " << maxFlow << '\n';
+  std::cout << "Minimum Cut:  " << minCut << '\n';
+  std::cout << "Source side:  {";
+  for (int v = 0; v < static_cast<int>(visited.size()); v++) {
+    if (visited[v]) std::cout << ' ' << v;
+  }
+  std::cout << " }\n";
 }
 
+}  // namespace
 
+int main() {
+  // Same 4-node example as the first (adjacency matrix) draft.
+  ResidualGraph graph(4);
+  addEdge(graph, 0, 1, 10);
+  addEdge(graph, 0, 2, 5);
+  addEdge(graph, 1, 3, 4);
+  addEdge(graph, 2, 3, 8);
 
+  const int src = 0;
+  const int sink = 3;
+
+  run("Edmonds-Karp", edmondsKarp, graph, src, sink);
+  run("Dinic", dinic, graph, src, sink);
+}

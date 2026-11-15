@@ -20,7 +20,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/seam_dp.cpp")
   list(APPEND SEAM_DEFS SEAM_HAVE_DP)
 endif()
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/seam_graphcut.cpp")
-  list(APPEND SEAM_SOURCES seam_graphcut.cpp)
+  list(APPEND SEAM_SOURCES seam_graphcut.cpp MinCutMaxFlow.cpp)
   list(APPEND SEAM_DEFS SEAM_HAVE_GRAPHCUT)
 endif()
 message(STATUS "seam_carving sources: ${SEAM_SOURCES}")
@@ -34,3 +34,7 @@ endif()
 if(NOT MSVC)
   target_compile_options(seam_carving PRIVATE -Wall -Wextra)
 endif()
+
+# Stand-alone max-flow test (toy 4-node graph, Edmonds-Karp vs Dinic).
+# No OpenCV needed.
+add_executable(mincut_demo mainMinCut.cpp MinCutMaxFlow.cpp)
