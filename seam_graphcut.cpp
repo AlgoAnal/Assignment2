@@ -86,13 +86,13 @@ namespace
   }
 }
 
-// Dinic (default; this is the name seam.h already declares)
+// Dinic, default
 seam_t find_seam_graphcut(const cv::Mat& energy, float& total_cost)
 {
   return find_seam_with(energy, total_cost, mincut::dinic);
 }
 
-// Edmonds-Karp, kept for comparison in the report
+// Edmonds-Karp graphcut
 seam_t find_seam_graphcut_ek(const cv::Mat& energy, float& total_cost)
 {
   return find_seam_with(energy, total_cost, mincut::edmondsKarp);
