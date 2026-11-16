@@ -24,7 +24,7 @@ const algo_entry kAlgos[] = {
 #endif
 #ifdef SEAM_HAVE_GRAPHCUT
     {"graphcut", find_seam_graphcut},
-    {"graphcut_ek", find_seam_graphcut_ek},
+    // {"graphcut_ek", find_seam_graphcut_ek},  // Edmonds-Karp: slow, disabled
 #endif
 };
 
