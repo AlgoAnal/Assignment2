@@ -1,0 +1,25 @@
+# Build output (CMake build folders, including WSL ones such as build-wsl/)
+build/
+build-*/
+out/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+
+# Compiled files
+*.o
+*.o.d
+*.obj
+*.exe
+*.pdb
+a.out
+
+# Compiled programs (Linux/WSL executables have no extension)
+/mincut_demo
+/seam_carving
+/main
+
+# Editor / IDE
+.vs/
+.vscode/
+CMakeUserPresets.json
