@@ -26,7 +26,7 @@ struct run_stats {
 
 constexpr float kInfinity = std::numeric_limits<float>::max();
 
-// ---- Shared functions (def in seams.cpp) -----------------------------------
+// ---- Shared functions (defined in seam.cpp) -----------------------------------
 
 // |Gx| + |Gy| of the grayscale image using Sobel. All algorithms must use this
 // so total-energy numbers are comparable.

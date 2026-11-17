@@ -2,7 +2,7 @@
 // Runs Edmonds-Karp and Dinic on the same toy graph; both must agree, and the
 // min cut must equal the max flow.
 
-#include "MinCutMaxFlow.h"
+#include "maxflow/MinCutMaxFlow.h"
 
 #include <iostream>
 #include <vector>

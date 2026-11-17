@@ -10,8 +10,8 @@
 //   (r, c+1) -> (r, c)     inf          at most one cut per row
 //   (r, c) -> (r+-1, c-1)  inf          seam moves at most 1 column per row
 
-#include "./common/seam.h"
-#include "MinCutMaxFlow.h"
+#include "common/seam.h"
+#include "maxflow/MinCutMaxFlow.h"
 
 namespace
 {

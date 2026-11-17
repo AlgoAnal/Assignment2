@@ -7,34 +7,40 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
+if(MSVC)
+  set(WARN_FLAGS /W3)
+else()
+  set(WARN_FLAGS -Wall -Wextra)
+endif()
+
+# ---- Max-flow / min-cut library (no OpenCV) --------------------------------
+add_library(maxflow STATIC src/maxflow/MinCutMaxFlow.cpp)
+target_include_directories(maxflow PUBLIC src)
+target_compile_options(maxflow PRIVATE ${WARN_FLAGS})
+
+# ---- Seam carving core: shared code + every seam-finding algorithm ---------
 find_package(OpenCV REQUIRED)
 
-# Always built.
-set(SEAM_SOURCES main.cpp ./common/seam.cpp seam_greedy.cpp)
-set(SEAM_DEFS "")
+add_library(seam_core STATIC
+  src/common/seam.cpp
+  src/algorithms/seam_greedy.cpp
+  src/algorithms/seam_dp.cpp
+  src/algorithms/seam_graphcut.cpp
+)
+target_include_directories(seam_core PUBLIC src ${OpenCV_INCLUDE_DIRS})
+target_link_libraries(seam_core PUBLIC maxflow ${OpenCV_LIBS})
+target_compile_options(seam_core PRIVATE ${WARN_FLAGS})
 
-# Optional algorithms: picked up automatically once the file exists.
-# (Re-run cmake after adding a file so this check runs again.)
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/seam_dp.cpp")
-  list(APPEND SEAM_SOURCES seam_dp.cpp)
-  list(APPEND SEAM_DEFS SEAM_HAVE_DP)
-endif()
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/seam_graphcut.cpp")
-  list(APPEND SEAM_SOURCES seam_graphcut.cpp MinCutMaxFlow.cpp)
-  list(APPEND SEAM_DEFS SEAM_HAVE_GRAPHCUT)
-endif()
-message(STATUS "seam_carving sources: ${SEAM_SOURCES}")
+# ---- Executables -----------------------------------------------------------
 
-add_executable(seam_carving ${SEAM_SOURCES})
-target_include_directories(seam_carving PRIVATE ${OpenCV_INCLUDE_DIRS})
-target_link_libraries(seam_carving PRIVATE ${OpenCV_LIBS})
-if(SEAM_DEFS)
-  target_compile_definitions(seam_carving PRIVATE ${SEAM_DEFS})
-endif()
-if(NOT MSVC)
-  target_compile_options(seam_carving PRIVATE -Wall -Wextra)
-endif()
+# Runs greedy / DP / graph cut on one image and compares them.
+add_executable(seam_carving apps/compare_main.cpp)
+target_link_libraries(seam_carving PRIVATE seam_core)
+
+# DP only, writes the result plus a red/yellow seam visualisation.
+add_executable(dp_seam apps/dp_main.cpp)
+target_link_libraries(dp_seam PRIVATE seam_core)
 
 # Stand-alone max-flow test (toy 4-node graph, Edmonds-Karp vs Dinic).
-# No OpenCV needed.
-add_executable(mincut_demo mainMinCut.cpp MinCutMaxFlow.cpp)
+add_executable(mincut_demo apps/mincut_demo.cpp)
+target_link_libraries(mincut_demo PRIVATE maxflow)

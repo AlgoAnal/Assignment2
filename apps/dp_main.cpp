@@ -1,6 +1,6 @@
 // Usage: dp_seam.exe <input> <output> <newWidth> <newHeight>
 
-#include "seam_dp.h"
+#include "algorithms/seam_dp.h"
 #include <chrono>
 #include <exception>
 #include <filesystem>

@@ -1,7 +1,7 @@
 // GAME PLAN: Row-by-row: from the current pixel, move to the cheapest of the three
 // neighbours in the next row. No look-ahead, no backtracking.
 
-#include "./common/seam.h"
+#include "common/seam.h"
 #include <algorithm>
 #include <utility>
 

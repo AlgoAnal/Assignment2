@@ -1,11 +1,8 @@
+// Runs every seam-finding algorithm on the same image and compares
+// search time, total removed-seam energy, and the first seam against DP.
+// Usage: seam_carving <input_image> <out_prefix> <target_width> <target_height>
 
-#include "./common/seam.h"
-
-#include <exception>
-#include <iomanip>
-#include <iostream>
-#include <string>
-
+#include "common/seam.h"
 
 #include <exception>
 #include <iomanip>
@@ -14,21 +11,16 @@
 
 namespace {
 
-// To add an algorithm: declare it in seam_common.h, add a row here (guarded
-// by its own macro if the file is optional) and add its .cpp to the build.
+// To add an algorithm: declare it in src/common/seam.h, add a row here and
+// add its .cpp to the seam_core library in CMakeLists.txt.
 const algo_entry kAlgos[] = {
     {"greedy", find_seam_greedy},
     {"greedy_all_starts", find_seam_greedy_all_starts},
-#ifdef SEAM_HAVE_DP
     {"dp", find_seam_dp},
-#endif
-#ifdef SEAM_HAVE_GRAPHCUT
     {"graphcut", find_seam_graphcut},
     // {"graphcut_ek", find_seam_graphcut_ek},  // Edmonds-Karp: slow, disabled
-#endif
 };
 
-#ifdef SEAM_HAVE_DP
 // Compares the first vertical seam of the original image: how much worse is
 // each other algorithm than DP, and how many rows coincide with the DP seam?
 void compare_first_seam(const cv::Mat& src) {
@@ -56,7 +48,6 @@ void compare_first_seam(const cv::Mat& src) {
     }
   }
 }
-#endif
 
 }  // namespace
 
@@ -110,10 +101,6 @@ int main(int argc, char** argv) {
     }
   }
 
-#ifdef SEAM_HAVE_DP
   compare_first_seam(src);
-#else
-  std::cout << "\n(dp not built: skipping the greedy-vs-dp seam comparison)\n";
-#endif
   return 0;
 }

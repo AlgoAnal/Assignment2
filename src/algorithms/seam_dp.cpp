@@ -1,4 +1,5 @@
-#include "seam_dp.h"
+#include "algorithms/seam_dp.h"
+#include "common/seam.h"
 #include <algorithm>
 #include <stdexcept>
 #include <string>
@@ -158,4 +159,21 @@ cv::Mat seamCarve(const cv::Mat& img, int newWidth, int newHeight, cv::Mat* mark
 	t = carveTracked(t, img.rows - newHeight, tOrigin, *marked, yellow);
 	cv::transpose(t, result);
 	return result;
+}
+
+// ---- Adapter for the shared comparison harness (common/seam.h) -------------
+// The harness passes a CV_32F energy map; the DP above works in CV_64F.
+seam_t find_seam_dp(const cv::Mat& energy, float& total_cost)
+{
+	CV_Assert(energy.type() == CV_32F && energy.rows > 0 && energy.cols > 0);
+	cv::Mat energy64;
+	energy.convertTo(energy64, CV_64F);
+	seam_t seam = findVerticalSeam(energy64);
+
+	total_cost = 0.0f;
+	for (int i = 0; i < energy.rows; ++i)
+	{
+		total_cost += energy.at<float>(i, seam[i]);
+	}
+	return seam;
 }

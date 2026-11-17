@@ -18,6 +18,10 @@ a.out
 /mincut_demo
 /seam_carving
 /main
+/dp_seam
+
+# Program output images (keep inputs in images/)
+/output/
 
 # Editor / IDE
 .vs/
