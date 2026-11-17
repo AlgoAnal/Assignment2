@@ -61,19 +61,25 @@ std::vector<int> findVerticalSeam(const cv::Mat& energy)
 	return seam;
 }
 
-cv::Mat removeVerticalSeam(const cv::Mat& img, const std::vector<int>& seam)
+template <typename T>
+static cv::Mat removeSeam(const cv::Mat& src, const std::vector<int>& seam)
 {
-	const int m = img.rows, n = img.cols;
-	cv::Mat out(m, n - 1, img.type());
+	const int m = src.rows, n = src.cols;
+	cv::Mat out(m, n - 1, src.type());
 	for (int i = 0; i < m; ++i)
 	{
-		const cv::Vec3b* src = img.ptr<cv::Vec3b>(i);
-		cv::Vec3b* dst = out.ptr<cv::Vec3b>(i);
+		const T* in = src.ptr<T>(i);
+		T* dst = out.ptr<T>(i);
 		const int s = seam[i];
-		std::copy(src, src + s, dst);
-		std::copy(src + s + 1, src + n, dst + s);
+		std::copy(in, in + s, dst);
+		std::copy(in + s + 1, in + n, dst + s);
 	}
 	return out;
+}
+
+cv::Mat removeVerticalSeam(const cv::Mat& img, const std::vector<int>& seam)
+{
+	return removeSeam<cv::Vec3b>(img, seam);
 }
 
 cv::Mat carveVertical(cv::Mat img, int count)
@@ -96,15 +102,60 @@ cv::Mat carveHorizontal(const cv::Mat& img, int count)
 	return out;
 }
 
-cv::Mat seamCarve(const cv::Mat& img, int newWidth, int newHeight)
+cv::Mat carveTracked(cv::Mat img, int count, cv::Mat& origin, cv::Mat& marked,
+	const cv::Vec3b& color)
+{
+	for (int k = 0; k < count; ++k)
+	{
+		cv::Mat energy = computeEnergy(img);
+		std::vector<int> seam = findVerticalSeam(energy);
+		for (int i = 0; i < img.rows; ++i)
+		{
+			const cv::Vec2i o = origin.at<cv::Vec2i>(i, seam[i]);  // (x, y) in the original
+			marked.at<cv::Vec3b>(o[1], o[0]) = color;
+		}
+		img = removeSeam<cv::Vec3b>(img, seam);
+		origin = removeSeam<cv::Vec2i>(origin, seam);
+	}
+	return img;
+}
+
+cv::Mat seamCarve(const cv::Mat& img, int newWidth, int newHeight, cv::Mat* marked)
 {
 	if (img.empty() || img.type() != CV_8UC3)
+	{
 		throw std::invalid_argument("Image must be a non-empty 8-bit 3-channel image");
+	}
 	if (newWidth < 1 || newHeight < 1 || newWidth > img.cols || newHeight > img.rows)
+	{
 		throw std::invalid_argument("Target size must be between 1x1 and " +
 			std::to_string(img.cols) + "x" + std::to_string(img.rows) +
 			" (seam removal only shrinks)");
+	}
+	if (marked == nullptr)
+	{
+		cv::Mat result = carveVertical(img, img.cols - newWidth);  // vertical seams
+		return carveHorizontal(result, img.rows - newHeight);      // horizontal seams
+	}
 
-	cv::Mat result = carveVertical(img, img.cols - newWidth);  // vertical seams
-	return carveHorizontal(result, img.rows - newHeight);      // horizontal seams
+	// With seam visualisation
+	*marked = img.clone();
+	cv::Mat origin(img.size(), CV_32SC2);
+	for (int y = 0; y < img.rows; ++y)
+	{
+		for (int x = 0; x < img.cols; ++x)
+		{
+			origin.at<cv::Vec2i>(y, x) = cv::Vec2i(x, y);
+		}
+	}
+
+	const cv::Vec3b red(0, 0, 255), yellow(0, 255, 255);
+	cv::Mat result = carveTracked(img, img.cols - newWidth, origin, *marked, red);
+
+	cv::Mat t, tOrigin;
+	cv::transpose(result, t);
+	cv::transpose(origin, tOrigin);
+	t = carveTracked(t, img.rows - newHeight, tOrigin, *marked, yellow);
+	cv::transpose(t, result);
+	return result;
 }

@@ -20,5 +20,8 @@ cv::Mat carveVertical(cv::Mat img, int count);
 // Horizontal seams = vertical seams on the transposed image
 cv::Mat carveHorizontal(const cv::Mat& img, int count);
 
+// Same loop as carveVertical, but every removed seam is also painted on "marked"
+cv::Mat carveTracked(cv::Mat img, int count, cv::Mat& origin, cv::Mat& marked, const cv::Vec3b& color);
+
 // Shrinks img to newWidth x newHeight (vertical seams first, then horizontal)
-cv::Mat seamCarve(const cv::Mat& img, int newWidth, int newHeight);
+cv::Mat seamCarve(const cv::Mat& img, int newWidth, int newHeight, cv::Mat* marked = nullptr);
