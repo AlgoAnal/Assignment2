@@ -37,7 +37,8 @@ jobs:
           key: opencv-${{ env.OPENCV_VERSION }}-${{ runner.os }}-${{ hashFiles('cmake/FetchOpenCV.cmake') }}
 
       - name: Configure
-        run: cmake -S . -B build -DSEAM_OPENCV_VERSION=${{ env.OPENCV_VERSION }}
+        # Quoted: PowerShell would otherwise split "-D...=4.10.0" at the first dot.
+        run: cmake -S . -B build "-DSEAM_OPENCV_VERSION=${{ env.OPENCV_VERSION }}"
 
       - name: Build
         run: cmake --build build --config Release --parallel
