@@ -112,8 +112,20 @@ unset(OpenCV_ARCH)
 unset(OpenCV_RUNTIME)
 unset(OpenCV_DIR CACHE)
 set(OpenCV_STATIC ON)
+
+# On Windows the install is a "pack": a top-level OpenCVConfig.cmake that
+# picks <arch>/<vcNN>/staticlib from the compiler version. OpenCV 4.10 does
+# not know newer compilers (e.g. Visual Studio 2026, MSVC 19.5x) and then
+# finds nothing, so load the inner config directly when there is one.
+set(_ocv_config_dir "${_ocv_install}")
+file(GLOB_RECURSE _ocv_inner_configs "${_ocv_install}/OpenCVConfig.cmake")
+list(FILTER _ocv_inner_configs INCLUDE REGEX "/staticlib/OpenCVConfig\\.cmake$")
+if(_ocv_inner_configs)
+  list(GET _ocv_inner_configs 0 _ocv_inner)
+  get_filename_component(_ocv_config_dir "${_ocv_inner}" DIRECTORY)
+endif()
 find_package(OpenCV REQUIRED CONFIG COMPONENTS ${_ocv_modules}
-             PATHS "${_ocv_install}" NO_DEFAULT_PATH)
+             PATHS "${_ocv_config_dir}" NO_DEFAULT_PATH)
 message(STATUS "Using downloaded OpenCV ${OpenCV_VERSION} from ${OpenCV_DIR}")
 
 if(MSVC)
