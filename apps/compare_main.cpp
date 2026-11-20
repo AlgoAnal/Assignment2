@@ -17,8 +17,8 @@ const algo_entry kAlgos[] = {
     {"greedy", find_seam_greedy},
     {"greedy_all_starts", find_seam_greedy_all_starts},
     {"dp", find_seam_dp},
-    {"graphcut", find_seam_graphcut},
-    // {"graphcut_ek", find_seam_graphcut_ek},  // Edmonds-Karp: slow, disabled
+    {"graphcut", find_seam_graphcut},        // max-flow by Dinic
+    {"graphcut_ek", find_seam_graphcut_ek},  // max-flow by Edmonds-Karp (slowest)
 };
 
 // Compares the first vertical seam of the original image: how much worse is

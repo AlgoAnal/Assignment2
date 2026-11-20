@@ -95,13 +95,14 @@ if "%~1"=="" (
 exit /b 0
 
 :cmd_compare
-rem Runs greedy, greedy (all starts), DP and graph cut on the same image.
+rem Runs greedy, greedy (all starts), DP and graph cut (Dinic and
+rem Edmonds-Karp) on the same image.
 set "IMG=%~1"
 set "W=%~2"
 set "H=%~3"
 if "%IMG%"=="" (
-  echo Graph cut is slow: about 15 s per seam on a 651x717 image.
-  echo Keep the number of removed seams small.
+  echo Graph cut is slow on a 651x717 image: Dinic takes about 15 s per seam
+  echo and Edmonds-Karp several times longer. Keep the number of removed seams small.
   call :ask_image_and_size "images\tower.png" 646 717
 )
 call :check_image || exit /b 1
@@ -118,7 +119,7 @@ exit /b 0
 set "IMG=%~1"
 set "W=%~2"
 set "H=%~3"
-if "%IMG%"=="" call :ask_image_and_size "images\tower.jpg" 1200 800
+if "%IMG%"=="" call :ask_image_and_size "images\tower1.jpg" 1200 800
 call :check_image || exit /b 1
 call :do_build || exit /b 1
 call :output_stem

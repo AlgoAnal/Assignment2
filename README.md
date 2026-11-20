@@ -83,12 +83,13 @@ OpenCV does not create folders, so make `output/` first (it is git-ignored).
 ```bash
 mkdir -p output
 
-# Compare greedy / DP / graph cut, shrinking to 500x500.
+# Compare greedy / DP / graph cut (Dinic and Edmonds-Karp), removing 5 seams.
+# Graph cut is slow, so keep the number of seams small.
 # Writes <prefix>_<algo>.png and <prefix>_<algo>_seams.png
-./build/seam_carving images/tower.png output/tower 500 500
+./build/seam_carving images/tower.png output/tower 646 717
 
 # DP only; also writes <output>_visualized.<ext> (vertical seams red, horizontal yellow)
-./build/dp_seam images/tower.jpg output/tower_dp.jpg 1200 800
+./build/dp_seam images/tower1.jpg output/tower_dp.jpg 1200 800
 
 # Max-flow sanity check
 ./build/mincut_demo
@@ -111,7 +112,7 @@ On Linux the Open dialog uses `zenity` (`sudo apt install zenity`).
 | Control | What it does |
 |---|---|
 | Working size | Downscales the image so its longest side is at most 200-800 px (or full size) before carving. Graph cut is slow on large images. |
-| Algorithm (dropdown) | Greedy, Greedy (all starts), Dynamic programming, Graph cut (Dinic). Changing it restarts. |
+| Algorithm (dropdown) | Greedy, Greedy (all starts), Dynamic programming, Graph cut (Dinic), Graph cut (Edmonds-Karp). Changing it restarts. |
 | Width / Height sliders | Target size. Shrinking further continues from the current image; growing restarts. Ctrl+click to type a value. |
 | Step (`Space`) | Remove one seam (hold to repeat) |
 | Play / Pause (`P`) | Animate, with *seams per frame* setting the speed |
