@@ -1,0 +1,73 @@
+# Builds the Windows programs and publishes them as a GitHub release.
+#
+# Trigger: push a version tag, for example
+#   git tag v1.0.0
+#   git push origin v1.0.0
+# Every push and pull request to main is also built (no release) so a
+# broken build shows up before you tag it.
+
+name: Build and release
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write   # needed to create the release and upload the zip
+
+env:
+  OPENCV_VERSION: "4.10.0"
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # OpenCV is built from source by cmake/FetchOpenCV.cmake (several
+      # minutes). Cache the installed static libraries so later runs skip it.
+      - name: Cache OpenCV
+        uses: actions/cache@v4
+        with:
+          path: build/_deps/opencv-${{ env.OPENCV_VERSION }}/install
+          key: opencv-${{ env.OPENCV_VERSION }}-${{ runner.os }}-${{ hashFiles('cmake/FetchOpenCV.cmake') }}
+
+      - name: Configure
+        run: cmake -S . -B build -DSEAM_OPENCV_VERSION=${{ env.OPENCV_VERSION }}
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      # OpenCV is linked statically, so the .exe files run on their own.
+      - name: Package
+        shell: pwsh
+        run: |
+          $name = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME } else { "dev-$($env:GITHUB_SHA.Substring(0,7))" }
+          $pkg = "seam-carving-$name-windows-x64"
+          New-Item -ItemType Directory -Force "$pkg/images" | Out-Null
+          Copy-Item build/Release/seam_demo.exe, build/Release/seam_carving.exe, `
+                    build/Release/dp_seam.exe, build/Release/mincut_demo.exe $pkg
+          Copy-Item images/* "$pkg/images"
+          Copy-Item README.md $pkg
+          Compress-Archive -Path $pkg -DestinationPath "$pkg.zip"
+          "PKG=$pkg" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+
+      # Keeps the zip downloadable from the run page for every build.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PKG }}
+          path: ${{ env.PKG }}.zip
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create $env:GITHUB_REF_NAME "$env:PKG.zip" `
+            --title "Seam Carving $env:GITHUB_REF_NAME" `
+            --generate-notes
