@@ -21,6 +21,10 @@ const algo_choice kAlgos[] = {
      "Minimum s-t cut of the pixel graph via max flow.\n"
      "Optimal, but much slower than DP.",
      find_seam_graphcut},
+    {"Graph cut (Edmonds-Karp)",
+     "Minimum s-t cut via BFS shortest augmenting paths.\n"
+     "Optimal, but far slower than Dinic: use a small image.",
+     find_seam_graphcut_ek},
 };
 const int kNumAlgos = static_cast<int>(sizeof(kAlgos) / sizeof(kAlgos[0]));
 
