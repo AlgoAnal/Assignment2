@@ -4,6 +4,12 @@ Repository for Assignment 2 of the Algorithm Analysis (CSD3131/CSD3130) module, 
 Image compression by seam carving, implemented three ways: dynamic programming,
 greedy, and graph cut (min-cut / max-flow).
 
+## Video presentation
+
+[![Video presentation](https://img.youtube.com/vi/y9E9H-4E-kw/hqdefault.jpg)](https://www.youtube.com/watch?v=y9E9H-4E-kw)
+
+Watch on YouTube: https://www.youtube.com/watch?v=y9E9H-4E-kw
+
 ## Layout
 
 ```
